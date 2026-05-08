@@ -29,21 +29,23 @@ def subtrai_ABNT(numero1, numero2):                                             
     resultado = arredondar_ABNT(resultado, casas_deci)                                 # Aplica o arredondamento conforme a norma.
     return resultado                                                                   # Retorna o valor final ajustado.
 
-def arredondar_ABNT(numero, casas_decimais):                                    # Aplica o arredondamento conforme a norma ABNT NBR 5891, que define regras específicas para casos em que o dígito a ser eliminado é 5.
-
-    fator = 10 ** casas_decimais                                                # Multiplica o número por 10 ** casas_decimais para deslocar a vírgula.
+def arredondar_ABNT(numero, casas_decimais):
+    fator = 10 ** casas_decimais
     numero_ajustado = numero * fator
     inteiro = int(numero_ajustado)
-    decimal = numero_ajustado - inteiro
+    resto = numero_ajustado - inteiro
 
-    if decimal == 0.5:                                                          # Se a parte decimal for exatamente 0.5:
-        if inteiro % 2 == 0:                                                    # Verifica se o número anterior (parte inteira) é par → mantém. Se for ímpar → arredonda para cima.
-            return inteiro / fator                                              # Mantém
-        else:
-            return (inteiro + 1) / fator                                        # Arredonda para cima
-    else:
-        return round(numero, casas_decimais)                                    # Retorna o resultado
-        
+    # Caso especial: exatamente 0.5
+    if abs(resto - 0.5) < 1e-12:
+        if inteiro % 2 == 0:  # último algarismo par → mantém
+            return inteiro / fator
+        else:                 # último algarismo ímpar → arredonda para cima
+            return (inteiro + 1) / fator
+    elif resto < 0.5:         # menor que 5 → mantém
+        return inteiro / fator
+    else:                     # maior que 5 → arredonda para cima
+        return (inteiro + 1) / fator
+          
 
 # --- Multiplicicação e divisão
         
@@ -73,7 +75,10 @@ def menor_casas_decimais(num1, num2):                                           
     casas2 = len(str(num2).split(".")[1]) if "." in str(num2) else 0            # Verifica se há parte decimal e conta os dígitos após o ponto.
     return min(casas1, casas2)
 
-print("Multiplicação:", multiplica_ABNT(4.4435435, 1))
-print("Divisão:", divide_ABNT(786.74, 3.57))
-print("Soma:", soma_ABNT(4.11, 1))
-print("Subtração:", subtrai_ABNT(45.769, 45.7))
+
+print(soma_ABNT(4.11, 1))       # Esperado: 5.1
+print(subtrai_ABNT(10.55, 2.3)) # Esperado: 8.3
+print(arredondar_ABNT(4.55, 1)) # Esperado: 4.6
+print(arredondar_ABNT(4.45, 1)) # Esperado: 4.4
+print(arredondar_ABNT(5.1328, 2)) # Esperado: 5.13
+print(arredondar_ABNT(1.236, 2))  # Esperado: 1.24
